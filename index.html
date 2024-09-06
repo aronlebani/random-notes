@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>MIDI Player</title>
+		<script src="./midi.js" type="text/javascript"></script>
+		<script>
+			let buffer = MessageBuffer()
+			
+			function start() {
+				fetch("http://localhost:8080")
+					.then(res => res.body)
+					.then(stream => stream.getReader())
+					.then(async reader => {
+						const { done, value } = await reader.read()
+						try {
+							while (true) {
+								const { done, value } = await reader.read()
+
+								buffer.push(value)
+
+								if (done) break
+							}
+						} finally {
+							reader.releaseLock()
+						}
+					})
+			}
+
+			setInterval(function() {
+				console.log(buffer.pop().toString())
+			}, 1000)
+		</script>
+	</head>
+	<body>
+		<h1>MIDI Player</h1>
+		<a href="#" onClick="start()">Play</a>
+		<a href="index.html">Stop</a>
+	</body>
+</html>
